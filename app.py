@@ -71,6 +71,9 @@ class StretchApp(rumps.App):
 
     @rumps.clicked("앱 종료")
     def quit_app(self, _):
+        import os
+        plist = os.path.expanduser("~/Library/LaunchAgents/com.user.stretchreminder.plist")
+        subprocess.run(["launchctl", "unload", plist], capture_output=True)
         rumps.quit_application()
 
 

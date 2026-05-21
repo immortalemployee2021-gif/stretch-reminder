@@ -6,6 +6,7 @@ VENV_DIR="$SCRIPT_DIR/.venv"
 RUNNER="$VENV_DIR/bin/StretchReminder"  # 심볼릭 링크 — macOS 백그라운드 항목 이름으로 표시됨
 PLIST_LABEL="com.user.stretchreminder"
 PLIST_PATH="$HOME/Library/LaunchAgents/$PLIST_LABEL.plist"
+APP_BUNDLE="$HOME/Applications/스트레칭 리마인더.app"
 
 echo "🧘 스트레치 리마인더 설치를 시작합니다..."
 
@@ -89,7 +90,37 @@ cat > "$PLIST_PATH" <<EOF
 </plist>
 EOF
 
-# 8. 서비스 시작
+# 8. Spotlight용 .app 번들 생성 (~/Applications/스트레칭 리마인더.app)
+# "앱 종료" 후 Spotlight에서 "스트레칭" 검색해 재시작 가능
+mkdir -p "$APP_BUNDLE/Contents/MacOS"
+cat > "$APP_BUNDLE/Contents/Info.plist" <<EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>CFBundleName</key><string>스트레칭 리마인더</string>
+    <key>CFBundleDisplayName</key><string>스트레칭 리마인더</string>
+    <key>CFBundleIdentifier</key><string>com.user.stretchreminder</string>
+    <key>CFBundleExecutable</key><string>StretchReminder</string>
+    <key>CFBundlePackageType</key><string>APPL</string>
+    <key>LSUIElement</key><true/>
+    <key>LSMinimumSystemVersion</key><string>12.0</string>
+</dict>
+</plist>
+EOF
+
+cat > "$APP_BUNDLE/Contents/MacOS/StretchReminder" <<EOF
+#!/bin/bash
+launchctl load -w "$PLIST_PATH" 2>/dev/null || true
+EOF
+chmod +x "$APP_BUNDLE/Contents/MacOS/StretchReminder"
+
+# 9. stretch-upgrade 명령어 등록 (Homebrew bin에 심볼릭 링크)
+BREW_BIN="$(brew --prefix)/bin"
+chmod +x "$SCRIPT_DIR/upgrade.sh"
+ln -sf "$SCRIPT_DIR/upgrade.sh" "$BREW_BIN/stretch-upgrade"
+
+# 10. 서비스 시작
 launchctl load "$PLIST_PATH" || {
     echo "❌ 서비스 시작에 실패했습니다."
     echo "   로그 확인: cat /tmp/stretchreminder.log"
@@ -100,4 +131,6 @@ echo ""
 echo "✅ 설치 완료! 상단 메뉴바에 🧘 아이콘이 나타납니다."
 echo "   45~80분 사이 랜덤으로 스트레칭 알림이 표시됩니다."
 echo ""
+echo "   재시작: Spotlight(Cmd+Space)에서 '스트레칭' 검색"
+echo "   업데이트: stretch-upgrade"
 echo "   제거: bash $SCRIPT_DIR/uninstall.sh"
