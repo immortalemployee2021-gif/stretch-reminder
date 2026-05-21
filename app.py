@@ -14,7 +14,7 @@ AppKit.NSApplication.sharedApplication().setActivationPolicy_(
 
 import rumps
 
-from tips import TIPS
+from tips import TIPS, TITLES
 
 # 45~80분 (초 단위)
 INTERVAL_MIN = 45 * 60
@@ -26,12 +26,13 @@ if "--test" in sys.argv:
     INTERVAL_MAX = 5
 
 
-def show_popup(title, desc):
+def show_popup(title, header, desc):
+    body = f"{header}\\n\\n{desc}"
     script = (
-        f'display dialog "{desc}" '
+        f'display dialog "{body}" '
         f'buttons {{"완료"}} '
         f'default button "완료" '
-        f'with title "🧘 {title}"'
+        f'with title "{title}"'
     )
     subprocess.run(["osascript", "-e", script])
 
@@ -45,15 +46,18 @@ class StretchApp(rumps.App):
         self._timer_thread.start()
 
     def _timer_loop(self):
+        # 최초 실행 시 10초 후 첫 팝업
+        first = True
         while True:
-            wait = random.randint(INTERVAL_MIN, INTERVAL_MAX)
-            # 1초 단위로 쪼개서 일시중지 즉시 반응
+            wait = 10 if first else random.randint(INTERVAL_MIN, INTERVAL_MAX)
+            first = False
             for _ in range(wait):
                 time.sleep(1)
 
             if not self.paused:
                 tip = random.choice(TIPS)
-                show_popup(tip["title"], tip["desc"])
+                title = random.choice(TITLES)
+                show_popup(title, tip["header"], tip["desc"])
 
     @rumps.clicked("일시정지")
     def toggle_pause(self, sender):
@@ -67,6 +71,9 @@ class StretchApp(rumps.App):
 
     @rumps.clicked("앱 종료")
     def quit_app(self, _):
+        import os
+        plist = os.path.expanduser("~/Library/LaunchAgents/com.user.stretchreminder.plist")
+        subprocess.run(["launchctl", "unload", plist], capture_output=True)
         rumps.quit_application()
 
 
