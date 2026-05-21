@@ -5,9 +5,7 @@
 ## 설치
 
 ```bash
-git clone https://github.com/<your-username>/stretch-reminder.git
-cd stretch-reminder
-bash install.sh
+git clone https://github.com/immortalemployee2021-gif/stretch-reminder.git && cd stretch-reminder && bash install.sh
 ```
 
 > Homebrew가 없으면 설치 안내가 표시됩니다.
@@ -19,16 +17,8 @@ bash install.sh
 
 | 항목 | 설명 |
 |------|------|
-| 일시중지 / 재개 | 회의 중 알림 끄고 싶을 때 |
-| 종료 | 앱 완전 종료 |
-
-## 팝업 즉시 테스트
-
-```bash
-python3 app.py --test
-```
-
-5초 후 팝업이 뜨면 정상입니다.
+| 일시정지 / 알림 재시작 | 회의 중 알림 끄고 싶을 때 |
+| 앱 종료 | 앱 완전 종료 |
 
 ## 스트레칭 팁 수정
 
