@@ -31,7 +31,6 @@ def show_popup(title, header, desc):
     script = (
         f'display dialog "{body}" '
         f'buttons {{"완료"}} '
-        f'default button "완료" '
         f'with title "{title}"'
     )
     subprocess.run(["osascript", "-e", script])
