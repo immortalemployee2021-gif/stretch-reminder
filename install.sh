@@ -3,6 +3,7 @@ set -e
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 VENV_DIR="$SCRIPT_DIR/.venv"
+RUNNER="$VENV_DIR/bin/StretchReminder"  # 심볼릭 링크 — macOS 백그라운드 항목 이름으로 표시됨
 PLIST_LABEL="com.user.stretchreminder"
 PLIST_PATH="$HOME/Library/LaunchAgents/$PLIST_LABEL.plist"
 
@@ -44,7 +45,7 @@ echo "rumps를 설치합니다..."
 "$VENV_DIR/bin/pip" install --quiet rumps || {
     echo "❌ rumps 설치에 실패했습니다."
     echo "   인터넷 연결을 확인하고 다시 시도해주세요."
-    rm -rf "$VENV_DIR"  # 불완전한 venv 제거
+    rm -rf "$VENV_DIR"
     exit 1
 }
 
@@ -54,13 +55,16 @@ echo "rumps를 설치합니다..."
     exit 1
 }
 
-# 5. 이미 실행 중이면 먼저 언로드
+# 5. StretchReminder 심볼릭 링크 생성 (macOS 백그라운드 항목 표시 이름)
+# venv 내부에 만들어야 Python이 pyvenv.cfg를 찾아 site-packages를 로드함
+ln -sf python "$RUNNER"
+
+# 6. 이미 실행 중이면 먼저 언로드
 if launchctl list "$PLIST_LABEL" &>/dev/null; then
     launchctl unload "$PLIST_PATH" 2>/dev/null || true
 fi
 
-# 6. launchd plist 생성
-PYTHON_PATH="$VENV_DIR/bin/python"
+# 7. launchd plist 생성
 cat > "$PLIST_PATH" <<EOF
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -70,7 +74,7 @@ cat > "$PLIST_PATH" <<EOF
     <string>$PLIST_LABEL</string>
     <key>ProgramArguments</key>
     <array>
-        <string>$PYTHON_PATH</string>
+        <string>$RUNNER</string>
         <string>$SCRIPT_DIR/app.py</string>
     </array>
     <key>RunAtLoad</key>
@@ -85,7 +89,7 @@ cat > "$PLIST_PATH" <<EOF
 </plist>
 EOF
 
-# 7. 서비스 시작
+# 8. 서비스 시작
 launchctl load "$PLIST_PATH" || {
     echo "❌ 서비스 시작에 실패했습니다."
     echo "   로그 확인: cat /tmp/stretchreminder.log"

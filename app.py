@@ -5,6 +5,13 @@ import sys
 import threading
 import time
 
+import AppKit
+
+# rumps 초기화 전에 Dock 아이콘 숨김
+AppKit.NSApplication.sharedApplication().setActivationPolicy_(
+    AppKit.NSApplicationActivationPolicyAccessory
+)
+
 import rumps
 
 from tips import TIPS
