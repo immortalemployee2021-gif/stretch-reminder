@@ -7,7 +7,7 @@
 터미널에 아래 명령어를 붙여넣으세요 (git 불필요):
 
 ```bash
-curl -L https://github.com/immortalemployee2021-gif/stretch-reminder/archive/refs/heads/main.zip -o /tmp/stretch.zip && unzip -q /tmp/stretch.zip -d /tmp && mkdir -p ~/stretch-reminder && cp -rf /tmp/stretch-reminder-main/. ~/stretch-reminder/ && bash ~/stretch-reminder/install.sh
+curl -L https://github.com/immortalemployee2021-gif/stretch-reminder/archive/refs/heads/main.zip -o /tmp/stretch.zip && unzip -q -o /tmp/stretch.zip -d /tmp && mkdir -p ~/stretch-reminder && cp -rf /tmp/stretch-reminder-main/. ~/stretch-reminder/ && bash ~/stretch-reminder/install.sh
 ```
 
 > Homebrew가 없으면 설치 안내가 표시됩니다.
