@@ -25,6 +25,15 @@ if "--test" in sys.argv:
     INTERVAL_MIN = 5
     INTERVAL_MAX = 5
 
+# 알림 간격 선택지 (라벨, 분). 분이 None이면 45~80분 랜덤.
+INTERVALS = [
+    ("랜덤 (45~80분)", None),
+    ("30분마다", 30),
+    ("60분마다", 60),
+    ("90분마다", 90),
+]
+INTERVAL_MAP = {label: minutes for label, minutes in INTERVALS}
+
 
 def show_popup(title, header, desc):
     body = f"{header}\\n\\n{desc}"
@@ -40,7 +49,20 @@ class StretchApp(rumps.App):
     def __init__(self):
         super().__init__("🧘", quit_button=None)
         self.paused = False
-        self.menu = ["일시정지", None, "앱 종료"]
+        # None이면 45~80분 랜덤, 정수면 해당 분 고정
+        self.interval_fixed = None
+        # '알림 간격' 서브메뉴 항목 생성 (현재 선택지에 체크 표시)
+        self._interval_items = []
+        for label, _minutes in INTERVALS:
+            item = rumps.MenuItem(label, callback=self.set_interval)
+            item.state = 1 if INTERVAL_MAP[label] == self.interval_fixed else 0
+            self._interval_items.append(item)
+        self.menu = [
+            ("알림 간격", self._interval_items),
+            "일시정지",
+            None,
+            "앱 종료",
+        ]
         self._timer_thread = threading.Thread(target=self._timer_loop, daemon=True)
         self._timer_thread.start()
 
@@ -48,8 +70,13 @@ class StretchApp(rumps.App):
         # 최초 실행 시 10초 후 첫 팝업
         first = True
         while True:
-            wait = 10 if first else random.randint(INTERVAL_MIN, INTERVAL_MAX)
-            first = False
+            if first:
+                wait = 10  # 최초 실행 시 10초 후 첫 팝업
+                first = False
+            elif self.interval_fixed is None:
+                wait = random.randint(INTERVAL_MIN, INTERVAL_MAX)
+            else:
+                wait = self.interval_fixed * 60
             for _ in range(wait):
                 time.sleep(1)
 
@@ -67,6 +94,12 @@ class StretchApp(rumps.App):
         else:
             self.title = "🧘"
             sender.title = "일시정지"
+
+    def set_interval(self, sender):
+        # 선택한 간격으로 변경하고 체크 표시 갱신 (다음 알림 주기부터 적용)
+        self.interval_fixed = INTERVAL_MAP[sender.title]
+        for item in self._interval_items:
+            item.state = 1 if INTERVAL_MAP[item.title] == self.interval_fixed else 0
 
     @rumps.clicked("앱 종료")
     def quit_app(self, _):
