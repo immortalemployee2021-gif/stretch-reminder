@@ -14,7 +14,7 @@ AppKit.NSApplication.sharedApplication().setActivationPolicy_(
 
 import rumps
 
-from tips import TIPS, TITLES
+from tips import TIPS, title_for
 
 # 45~80분 (초 단위)
 INTERVAL_MIN = 45 * 60
@@ -82,7 +82,7 @@ class StretchApp(rumps.App):
 
             if not self.paused:
                 tip = random.choice(TIPS)
-                title = random.choice(TITLES)
+                title = title_for(tip)
                 show_popup(title, tip["header"], tip["desc"])
 
     @rumps.clicked("일시정지")
