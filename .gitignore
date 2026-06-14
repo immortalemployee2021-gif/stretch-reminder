@@ -3,3 +3,7 @@ __pycache__/
 *.pyc
 .omc/
 CLAUDE.md
+.claude/
+.serena/
+memory/
+graphify-out/
