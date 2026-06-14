@@ -93,6 +93,9 @@ EOF
 # 8. Spotlight용 .app 번들 생성 (~/Applications/스트레칭 리마인더.app)
 # "앱 종료" 후 Spotlight에서 "스트레칭" 검색해 재시작 가능
 mkdir -p "$APP_BUNDLE/Contents/MacOS"
+# 앱 아이콘(.icns)을 번들에 복사 (Spotlight/Finder 표시용)
+mkdir -p "$APP_BUNDLE/Contents/Resources"
+cp "$SCRIPT_DIR/icon.icns" "$APP_BUNDLE/Contents/Resources/icon.icns"
 cat > "$APP_BUNDLE/Contents/Info.plist" <<EOF
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -102,6 +105,7 @@ cat > "$APP_BUNDLE/Contents/Info.plist" <<EOF
     <key>CFBundleDisplayName</key><string>스트레칭 리마인더</string>
     <key>CFBundleIdentifier</key><string>com.user.stretchreminder</string>
     <key>CFBundleExecutable</key><string>StretchReminder</string>
+    <key>CFBundleIconFile</key><string>icon</string>
     <key>CFBundlePackageType</key><string>APPL</string>
     <key>LSUIElement</key><true/>
     <key>LSMinimumSystemVersion</key><string>12.0</string>
