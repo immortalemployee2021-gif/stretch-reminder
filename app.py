@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import os
 import random
 import subprocess
 import sys
@@ -36,13 +37,9 @@ INTERVAL_MAP = {label: minutes for label, minutes in INTERVALS}
 
 
 def show_popup(title, header, desc):
-    body = f"{header}\\n\\n{desc}"
-    script = (
-        f'display dialog "{body}" '
-        f'buttons {{"완료"}} '
-        f'with title "{title}"'
-    )
-    subprocess.run(["osascript", "-e", script])
+    # 화면 정중앙 배치를 위해 popup.py(AppKit)로 띄운다 (osascript는 위치 지정 불가)
+    popup = os.path.join(os.path.dirname(os.path.abspath(__file__)), "popup.py")
+    subprocess.run([sys.executable, popup, title, header, desc])
 
 
 class StretchApp(rumps.App):
