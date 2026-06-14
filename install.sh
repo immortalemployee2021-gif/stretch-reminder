@@ -124,6 +124,37 @@ BREW_BIN="$(brew --prefix)/bin"
 chmod +x "$SCRIPT_DIR/upgrade.sh"
 ln -sf "$SCRIPT_DIR/upgrade.sh" "$BREW_BIN/stretch-upgrade"
 
+# 9b. 자동 업데이트 LaunchAgent (로그인 직후 + 24시간마다 upgrade.sh 실행)
+UPDATE_LABEL="com.user.stretchreminder.update"
+UPDATE_PLIST="$HOME/Library/LaunchAgents/$UPDATE_LABEL.plist"
+cat > "$UPDATE_PLIST" <<EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>$UPDATE_LABEL</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/bin/bash</string>
+        <string>$SCRIPT_DIR/upgrade.sh</string>
+    </array>
+    <key>RunAtLoad</key>
+    <true/>
+    <key>StartInterval</key>
+    <integer>86400</integer>
+    <key>StandardOutPath</key>
+    <string>/tmp/stretchreminder-update.log</string>
+    <key>StandardErrorPath</key>
+    <string>/tmp/stretchreminder-update.log</string>
+</dict>
+</plist>
+EOF
+# 주의: 여기서 launchctl load 를 호출하지 않는다.
+#  RunAtLoad=true 이므로 load 즉시 upgrade.sh 가 돌고, upgrade.sh 가 다시 install.sh 를
+#  호출해 무한 루프/경합이 생긴다. 대신 다음 로그인 때 launchd 가 이 plist 를 자동 로드하며
+#  자동 업데이트가 가동된다. (이미 로드돼 동작 중이면 install 이 파일만 갱신 → 충돌 없음)
+
 # 10. 서비스 시작
 launchctl load "$PLIST_PATH" || {
     echo "❌ 서비스 시작에 실패했습니다."
@@ -136,5 +167,5 @@ echo "✅ 설치 완료! 상단 메뉴바에 🧘 아이콘이 나타납니다."
 echo "   45~80분 사이 랜덤으로 스트레칭 알림이 표시됩니다."
 echo ""
 echo "   재시작: Spotlight(Cmd+Space)에서 '스트레칭' 검색"
-echo "   업데이트: stretch-upgrade"
+echo "   업데이트: stretch-upgrade (수동) / 매 로그인·24시간마다 자동 (다음 로그인부터 가동)"
 echo "   제거: bash $SCRIPT_DIR/uninstall.sh"
